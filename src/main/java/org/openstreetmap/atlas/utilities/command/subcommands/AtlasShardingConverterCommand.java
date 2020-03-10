@@ -24,6 +24,8 @@ import org.openstreetmap.atlas.utilities.command.abstractcommand.AbstractAtlasSh
 import org.openstreetmap.atlas.utilities.command.abstractcommand.CommandOutputDelegate;
 import org.openstreetmap.atlas.utilities.command.abstractcommand.OptionAndArgumentDelegate;
 import org.openstreetmap.atlas.utilities.command.parsing.OptionOptionality;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This command provides an easy way to change the sharding in which a folder of atlas files is
@@ -33,6 +35,9 @@ import org.openstreetmap.atlas.utilities.command.parsing.OptionOptionality;
  */
 public class AtlasShardingConverterCommand extends AbstractAtlasShellToolsCommand
 {
+    private static final Logger logger = LoggerFactory
+            .getLogger(AtlasShardingConverterCommand.class);
+
     private static final String INPUT = "input";
     private static final String INPUT_DESCRIPTION = "The input folder containing XXX_<old_shard_name>.atlas files";
     private static final String OUTPUT = "output";
@@ -125,13 +130,21 @@ public class AtlasShardingConverterCommand extends AbstractAtlasShellToolsComman
                     .filter(inputShardToAtlas::containsKey)
                     .forEach(inputShard -> inputAtlases.add(inputShardToAtlas.get(inputShard)));
             this.outputDelegate.printlnCommandMessage("Loading Atlas with " + inputAtlases);
-            final Atlas combined = new AtlasResourceLoader().load(inputAtlases);
-            final Optional<Atlas> result = combined.subAtlas(outputShard.bounds(),
-                    AtlasCutType.SOFT_CUT);
-            final File outputFile = outputFolder.child(
-                    countries.iterator().next() + "_" + outputShard.getName() + FileSuffix.ATLAS);
-            this.outputDelegate.printlnCommandMessage("Saving Atlas to " + outputFile);
-            result.ifPresent(atlas -> atlas.save(outputFile));
+            try
+            {
+                final Atlas combined = new AtlasResourceLoader().load(inputAtlases);
+                final Optional<Atlas> result = combined.subAtlas(outputShard.bounds(),
+                        AtlasCutType.SOFT_CUT);
+                final File outputFile = outputFolder.child(countries.iterator().next() + "_"
+                        + outputShard.getName() + FileSuffix.ATLAS);
+                this.outputDelegate.printlnCommandMessage("Saving Atlas to " + outputFile);
+                result.ifPresent(atlas -> atlas.save(outputFile));
+            }
+            catch (final Exception exception)
+            {
+                logger.error("Load atlas failed with output shard {}", outputShard, exception);
+                this.outputDelegate.printlnWarnMessage("Skipping output shard " + outputShard);
+            }
         }
         return 0;
     }
