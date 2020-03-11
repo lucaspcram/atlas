@@ -72,4 +72,10 @@ public class GeoHashSharding implements Sharding
         return Iterables.stream(GeoHashTile.allTiles(this.precision, polyLine.bounds()))
                 .filter(tile -> tile.bounds().intersects(polyLine)).map(tile -> (Shard) tile);
     }
+
+    @Override
+    public String toString()
+    {
+        return "geohash:" + this.precision;
+    }
 }
