@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.locationtech.jts.geom.Geometry;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.items.RelationMemberList;
 
@@ -32,6 +33,12 @@ public class PackedRelation extends Relation
     public List<Relation> allRelationsWithSameOsmIdentifier()
     {
         return packedAtlas().relationAllRelationsWithSameOsmIdentifier(this.index);
+    }
+
+    @Override
+    public Geometry getGeometry()
+    {
+        return packedAtlas().relationGeometry(this.index);
     }
 
     @Override

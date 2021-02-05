@@ -17,6 +17,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.locationtech.jts.geom.Geometry;
 import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.geography.GeometricSurface;
 import org.openstreetmap.atlas.geography.Located;
@@ -28,6 +29,7 @@ import org.openstreetmap.atlas.geography.atlas.builder.RelationBean;
 import org.openstreetmap.atlas.geography.atlas.items.complex.RelationOrAreaToMultiPolygonConverter;
 import org.openstreetmap.atlas.geography.atlas.multi.MultiAtlas;
 import org.openstreetmap.atlas.geography.atlas.packed.PackedAtlas;
+import org.openstreetmap.atlas.geography.converters.jts.JtsMultiPolygonToMultiPolygonConverter;
 import org.openstreetmap.atlas.geography.geojson.GeoJsonBuilder;
 import org.openstreetmap.atlas.geography.geojson.GeoJsonBuilder.LocationIterableProperties;
 import org.openstreetmap.atlas.geography.geojson.GeoJsonFeatureCollection;
@@ -70,6 +72,8 @@ public abstract class Relation extends AtlasEntity
     private static final Logger logger = LoggerFactory.getLogger(Relation.class);
     private static final long serialVersionUID = -9013894610780915685L;
     private static final RelationOrAreaToMultiPolygonConverter MULTI_POLYGON_CONVERTER = new RelationOrAreaToMultiPolygonConverter();
+    private static final JtsMultiPolygonToMultiPolygonConverter JTS_CONVERTER = new JtsMultiPolygonToMultiPolygonConverter();
+    private Geometry geom;
 
     protected Relation(final Atlas atlas)
     {
@@ -264,6 +268,18 @@ public abstract class Relation extends AtlasEntity
         return GeoJsonType.FEATURE;
     }
 
+    public Geometry getGeometry()
+    {
+        if (this.geom == null)
+        {
+            if (isMultiPolygon())
+            {
+                this.geom = JTS_CONVERTER.backwardConvert(MULTI_POLYGON_CONVERTER.convert(this));
+            }
+        }
+        return this.geom;
+    }
+
     @Override
     public ItemType getType()
     {
@@ -441,6 +457,10 @@ public abstract class Relation extends AtlasEntity
     @Override
     public String toWkt()
     {
+        if (isMultiPolygon() && getGeometry() != null)
+        {
+            return getGeometry().toText();
+        }
         return WktPrintable.toWktCollection(leafMembers().collect(Collectors.toList()));
     }
 

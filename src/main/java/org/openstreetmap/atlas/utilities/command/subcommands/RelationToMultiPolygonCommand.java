@@ -122,7 +122,6 @@ public class RelationToMultiPolygonCommand extends AtlasLoaderCommand
             {
                 this.outputDelegate
                         .printlnWarnMessage("warning: relation multipolygon is not OGC valid!");
-
                 if (!atlasMultiPolygon.isOSMValid())
                 {
                     this.outputDelegate.printlnErrorMessage(
@@ -156,7 +155,7 @@ public class RelationToMultiPolygonCommand extends AtlasLoaderCommand
 
         final File wktOutputFile = new File(concatenatedWktPath.toAbsolutePath().toString(),
                 this.getFileSystem());
-        wktOutputFile.writeAndClose(relationMultiPolygon.toText());
+        wktOutputFile.writeAndClose(atlasMultiPolygon.toWkb());
 
         if (!this.optionAndArgumentDelegate.hasOption(OUTPUT_WKT_OPTION_LONG))
         {

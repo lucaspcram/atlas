@@ -2,8 +2,10 @@ package org.openstreetmap.atlas.geography.atlas.packed;
 
 import java.util.Map;
 
+import org.locationtech.jts.geom.Geometry;
 import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.geography.Location;
+import org.openstreetmap.atlas.geography.MultiPolygon;
 import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.Polygon;
 import org.openstreetmap.atlas.geography.atlas.Atlas;
@@ -15,6 +17,7 @@ import org.openstreetmap.atlas.geography.atlas.exception.AtlasIntegrityException
 import org.openstreetmap.atlas.geography.atlas.items.AtlasItem;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.items.RelationMember;
+import org.openstreetmap.atlas.geography.converters.jts.JtsMultiPolygonToMultiPolygonConverter;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
 import org.slf4j.Logger;
@@ -180,7 +183,33 @@ public final class PackedAtlasBuilder implements AtlasBuilder
         try
         {
             this.atlas.addRelation(identifier, osmIdentifier, structure.getMemberIdentifiers(),
-                    structure.getMemberTypes(), structure.getMemberRoles(), tags);
+                    structure.getMemberTypes(), structure.getMemberRoles(), tags,
+                    new JtsMultiPolygonToMultiPolygonConverter()
+                            .backwardConvert(MultiPolygon.TEST_MULTI_POLYGON));
+        }
+        catch (final AtlasIntegrityException e)
+        {
+            throw e;
+        }
+        catch (final Exception e)
+        {
+            logger.error("Error adding Relation ({}): {}", identifier, structure.toString(), e);
+        }
+    }
+
+    public void addRelation(final long identifier, final long osmIdentifier,
+            final RelationBean structure, final Map<String, String> tags, final Geometry geometry)
+    {
+        if (structure.isEmpty())
+        {
+            throw new CoreException("Cannot add relation {} with an empty member list.",
+                    identifier);
+        }
+        initialize();
+        try
+        {
+            this.atlas.addRelation(identifier, osmIdentifier, structure.getMemberIdentifiers(),
+                    structure.getMemberTypes(), structure.getMemberRoles(), tags, geometry);
         }
         catch (final AtlasIntegrityException e)
         {

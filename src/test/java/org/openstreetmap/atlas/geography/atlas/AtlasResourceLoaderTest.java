@@ -1,5 +1,6 @@
 package org.openstreetmap.atlas.geography.atlas;
 
+import java.nio.file.FileSystems;
 import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -30,6 +31,37 @@ public class AtlasResourceLoaderTest
 
     @Rule
     public final ExpectedException expectedException = ExpectedException.none();
+
+    @Test
+    public void a()
+    {
+        /**
+         * final PackedAtlasBuilder builder = new PackedAtlasBuilder(); final Atlas original = new
+         * AtlasResourceLoader() .load(new File("/Users/samuelgass/Desktop/nasser.atlas"));
+         * original.lines().forEach(line -> { builder.addLine(line.getIdentifier(),
+         * line.asPolyLine(), line.getTags()); }); original.points().forEach(point -> {
+         * builder.addPoint(point.getIdentifier(), point.getLocation(), point.getTags()); });
+         * original.nodes().forEach(node -> { builder.addNode(node.getIdentifier(),
+         * node.getLocation(), node.getTags()); }); original.edges().forEach(edge -> {
+         * builder.addEdge(edge.getIdentifier(), edge.asPolyLine(), edge.getTags()); });
+         * original.areas().forEach(area -> { builder.addArea(area.getIdentifier(),
+         * area.asPolygon(), area.getTags()); }); original.relations().forEach(relation -> { if
+         * (relation.isMultiPolygon()) { builder.addRelation(relation.getIdentifier(),
+         * relation.getOsmIdentifier(), relation.getBean(), relation.getTags(), new
+         * JtsMultiPolygonToMultiPolygonConverter().backwardConvert( new
+         * RelationOrAreaToMultiPolygonConverter().convert(relation))); } else {
+         * builder.addRelation(relation.getIdentifier(), relation.getOsmIdentifier(),
+         * relation.getBean(), relation.getTags()); } }); final Atlas atlas = builder.get(); assert
+         * atlas != null; atlas.save(atlasFile);
+         **/
+        final File atlasFile = new File("/Users/samuelgass/Desktop/nasser.atlas",
+                FileSystems.getDefault());
+        new AtlasResourceLoader().load(atlasFile).relations().forEach(relation ->
+        {
+            System.out.println(relation.getGeometry().getCentroid());
+        });
+
+    }
 
     @Test
     public void attemptToLoadNonAtlasData()
