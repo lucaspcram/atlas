@@ -27,6 +27,51 @@ public class RectangleTest
     private final Rectangle rectangle4 = Rectangle.forLocations(this.location2, this.location4);
 
     @Test
+    public void testA1()
+    {
+        final Rectangle closeToSouthPole = Rectangle.forCorners(Location.forWkt("POINT(0 -87)"),
+                Location.forWkt("POINT(1 -84)"));
+        System.err.println("closeToSouthPole: " + closeToSouthPole.toWkt());
+        System.err.println("closeToSouthPole: " + closeToSouthPole.lowerLeft().toWkt());
+
+        final Rectangle expandedWorks = closeToSouthPole.expand(Distance.kilometers(1000));
+        System.err.println("expandedWorks: " + expandedWorks.toWkt());
+        System.err.println("expandedWorks: " + expandedWorks.lowerLeft().toWkt());
+        Assert.assertTrue(closeToSouthPole.overlaps(expandedWorks));
+
+        final Rectangle closeToSouthPole2 = Rectangle.forCorners(
+                Location.forWkt("POINT(-151.875 -85.0511288)"),
+                Location.forWkt("POINT(-146.25 -84.5413611)"));
+        System.err.println("closeToSouthPole2: " + closeToSouthPole2.toWkt());
+        System.err.println("closeToSouthPole2: " + closeToSouthPole2.lowerLeft().toWkt());
+
+        final Rectangle expandedWorks2 = closeToSouthPole2.expand(Distance.kilometers(550));
+        System.err.println("expandedWorks2: " + expandedWorks2.toWkt());
+        System.err.println("expandedWorks2: " + expandedWorks2.lowerLeft().toWkt());
+        Assert.assertTrue(closeToSouthPole2.overlaps(expandedWorks2));
+
+        final Rectangle expandedBroken2 = closeToSouthPole2.expand(Distance.kilometers(1000));
+        System.err.println("expandedBroken2: " + expandedBroken2.toWkt());
+        System.err.println("expandedBroken2: " + expandedBroken2.lowerLeft().toWkt());
+        Assert.assertTrue(closeToSouthPole2.overlaps(expandedBroken2));
+    }
+
+    @Test
+    public void testA2()
+    {
+        final Rectangle closeToSouthPole = Rectangle.forCorners(Location.forWkt("POINT(0 -87)"),
+                Location.forWkt("POINT(1 -84)"));
+        final Location oldLowerLeft = closeToSouthPole.lowerLeft();
+        final Location lowerLeftShiftedSouth = oldLowerLeft.shiftAlongGreatCircle(Heading.SOUTH,
+                Distance.meters(
+                        (Distance.APPROXIMATE_DISTANCE_PER_DEGREE_AT_EQUATOR.asMeters() * 3) - 1));
+        System.err.println(lowerLeftShiftedSouth);
+        final Location lowerLeftShiftedWest = lowerLeftShiftedSouth
+                .shiftAlongGreatCircle(Heading.WEST, Distance.kilometers(1000));
+        System.err.println(lowerLeftShiftedWest);
+    }
+
+    @Test
     public void testAntiMeridianEastRectangle()
     {
         final Location antiMeridian = new Location(Latitude.ZERO, Longitude.degrees(180));

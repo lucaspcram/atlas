@@ -353,14 +353,15 @@ public final class Rectangle extends Polygon
 
         final Location oldLowerLeft = this.lowerLeft;
         Distance southShiftDistance = distance;
+        double degreesToHitMinimum = 0;
+        final double diff = oldLowerLeft.getLatitude().asDegrees() - degreesLatitudeToShift;
         // If the lowerLeft is about to be shifted south of the South Pole, stop it!
-        if (oldLowerLeft.getLatitude().asDegrees() - degreesLatitudeToShift <= Latitude.MINIMUM
-                .asDegrees())
+        if (diff <= Latitude.MINIMUM.asDegrees())
         {
             logger.warn(
                     "Provided distance {} would have shifted past the South Pole, truncating southward expansion...",
                     distance);
-            final double degreesToHitMinimum = -1
+            degreesToHitMinimum = -1
                     * (Latitude.MINIMUM.asDegrees() - oldLowerLeft.getLatitude().asDegrees());
             // subtract a small buffer off the distance to just miss the pole.
             southShiftDistance = Distance
