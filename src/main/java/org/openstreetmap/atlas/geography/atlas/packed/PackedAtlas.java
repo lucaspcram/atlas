@@ -895,6 +895,8 @@ public final class PackedAtlas extends AbstractAtlas
      *            The member roles in the same order as the member identifiers
      * @param tags
      *            The relation's tags
+     * @param geometry
+     *            the JTS geometry for the relation, if it is a multipolygon
      */
     protected void addRelation(final long relationIdentifier, final long relationOsmIdentifier,
             final List<Long> identifiers, final List<ItemType> types, final List<String> roles,
@@ -1404,17 +1406,17 @@ public final class PackedAtlas extends AbstractAtlas
         }
     }
 
-    private LongArray areaIdentifiers()
-    {
-        return deserializedIfNeeded(() -> this.areaIdentifiers, FIELD_AREA_IDENTIFIERS_LOCK,
-                FIELD_AREA_IDENTIFIERS);
-    }
-
     private LongToLongMap areaIdentifierToAreaArrayIndex()
     {
         return deserializedIfNeeded(() -> this.areaIdentifierToAreaArrayIndex,
                 FIELD_AREA_IDENTIFIER_TO_AREA_ARRAY_INDEX_LOCK,
                 FIELD_AREA_IDENTIFIER_TO_AREA_ARRAY_INDEX);
+    }
+
+    private LongArray areaIdentifiers()
+    {
+        return deserializedIfNeeded(() -> this.areaIdentifiers, FIELD_AREA_IDENTIFIERS_LOCK,
+                FIELD_AREA_IDENTIFIERS);
     }
 
     private LongToLongMultiMap areaIndexToRelationIndices()
@@ -1472,17 +1474,17 @@ public final class PackedAtlas extends AbstractAtlas
                 FIELD_EDGE_END_NODE_INDEX);
     }
 
-    private LongArray edgeIdentifiers()
-    {
-        return deserializedIfNeeded(() -> this.edgeIdentifiers, FIELD_EDGE_IDENTIFIERS_LOCK,
-                FIELD_EDGE_IDENTIFIERS);
-    }
-
     private LongToLongMap edgeIdentifierToEdgeArrayIndex()
     {
         return deserializedIfNeeded(() -> this.edgeIdentifierToEdgeArrayIndex,
                 FIELD_EDGE_IDENTIFIER_TO_EDGE_ARRAY_INDEX_LOCK,
                 FIELD_EDGE_IDENTIFIER_TO_EDGE_ARRAY_INDEX);
+    }
+
+    private LongArray edgeIdentifiers()
+    {
+        return deserializedIfNeeded(() -> this.edgeIdentifiers, FIELD_EDGE_IDENTIFIERS_LOCK,
+                FIELD_EDGE_IDENTIFIERS);
     }
 
     private LongToLongMultiMap edgeIndexToRelationIndices()
@@ -1523,17 +1525,17 @@ public final class PackedAtlas extends AbstractAtlas
         return result;
     }
 
-    private LongArray lineIdentifiers()
-    {
-        return deserializedIfNeeded(() -> this.lineIdentifiers, FIELD_LINE_IDENTIFIERS_LOCK,
-                FIELD_LINE_IDENTIFIERS);
-    }
-
     private LongToLongMap lineIdentifierToLineArrayIndex()
     {
         return deserializedIfNeeded(() -> this.lineIdentifierToLineArrayIndex,
                 FIELD_LINE_IDENTIFIER_TO_LINE_ARRAY_INDEX_LOCK,
                 FIELD_LINE_IDENTIFIER_TO_LINE_ARRAY_INDEX);
+    }
+
+    private LongArray lineIdentifiers()
+    {
+        return deserializedIfNeeded(() -> this.lineIdentifiers, FIELD_LINE_IDENTIFIERS_LOCK,
+                FIELD_LINE_IDENTIFIERS);
     }
 
     private LongToLongMultiMap lineIndexToRelationIndices()
@@ -1565,12 +1567,6 @@ public final class PackedAtlas extends AbstractAtlas
         };
     }
 
-    private LongArray nodeIdentifiers()
-    {
-        return deserializedIfNeeded(() -> this.nodeIdentifiers, FIELD_NODE_IDENTIFIERS_LOCK,
-                FIELD_NODE_IDENTIFIERS);
-    }
-
     private LongToLongMap nodeIdentifierToNodeArrayIndex()
     {
         return deserializedIfNeeded(() -> this.nodeIdentifierToNodeArrayIndex,
@@ -1578,16 +1574,22 @@ public final class PackedAtlas extends AbstractAtlas
                 FIELD_NODE_IDENTIFIER_TO_NODE_ARRAY_INDEX);
     }
 
-    private LongToLongMultiMap nodeIndexToRelationIndices()
+    private LongArray nodeIdentifiers()
     {
-        return deserializedIfNeeded(() -> this.nodeIndexToRelationIndices,
-                FIELD_NODE_INDEX_TO_RELATION_INDICES_LOCK, FIELD_NODE_INDEX_TO_RELATION_INDICES);
+        return deserializedIfNeeded(() -> this.nodeIdentifiers, FIELD_NODE_IDENTIFIERS_LOCK,
+                FIELD_NODE_IDENTIFIERS);
     }
 
     private LongArrayOfArrays nodeInEdgesIndices()
     {
         return deserializedIfNeeded(() -> this.nodeInEdgesIndices, FIELD_NODE_IN_EDGES_INDICES_LOCK,
                 FIELD_NODE_IN_EDGES_INDICES);
+    }
+
+    private LongToLongMultiMap nodeIndexToRelationIndices()
+    {
+        return deserializedIfNeeded(() -> this.nodeIndexToRelationIndices,
+                FIELD_NODE_INDEX_TO_RELATION_INDICES_LOCK, FIELD_NODE_INDEX_TO_RELATION_INDICES);
     }
 
     private LongArray nodeLocations()
@@ -1608,17 +1610,17 @@ public final class PackedAtlas extends AbstractAtlas
                 FIELD_NODE_TAGS_LOCK, FIELD_NODE_TAGS);
     }
 
-    private LongArray pointIdentifiers()
-    {
-        return deserializedIfNeeded(() -> this.pointIdentifiers, FIELD_POINT_IDENTIFIERS_LOCK,
-                FIELD_POINT_IDENTIFIERS);
-    }
-
     private LongToLongMap pointIdentifierToPointArrayIndex()
     {
         return deserializedIfNeeded(() -> this.pointIdentifierToPointArrayIndex,
                 FIELD_POINT_IDENTIFIER_TO_POINT_ARRAY_INDEX_LOCK,
                 FIELD_POINT_IDENTIFIER_TO_POINT_ARRAY_INDEX);
+    }
+
+    private LongArray pointIdentifiers()
+    {
+        return deserializedIfNeeded(() -> this.pointIdentifiers, FIELD_POINT_IDENTIFIERS_LOCK,
+                FIELD_POINT_IDENTIFIERS);
     }
 
     private LongToLongMultiMap pointIndexToRelationIndices()
@@ -1645,17 +1647,17 @@ public final class PackedAtlas extends AbstractAtlas
                 FIELD_RELATION_GEOMETRIES);
     }
 
-    private LongArray relationIdentifiers()
-    {
-        return deserializedIfNeeded(() -> this.relationIdentifiers, FIELD_RELATION_IDENTIFIERS_LOCK,
-                FIELD_RELATION_IDENTIFIERS);
-    }
-
     private LongToLongMap relationIdentifierToRelationArrayIndex()
     {
         return deserializedIfNeeded(() -> this.relationIdentifierToRelationArrayIndex,
                 FIELD_RELATION_IDENTIFIER_TO_RELATION_ARRAY_INDEX_LOCK,
                 FIELD_RELATION_IDENTIFIER_TO_RELATION_ARRAY_INDEX);
+    }
+
+    private LongArray relationIdentifiers()
+    {
+        return deserializedIfNeeded(() -> this.relationIdentifiers, FIELD_RELATION_IDENTIFIERS_LOCK,
+                FIELD_RELATION_IDENTIFIERS);
     }
 
     private LongToLongMultiMap relationIndexToRelationIndices()
@@ -1683,17 +1685,17 @@ public final class PackedAtlas extends AbstractAtlas
                 FIELD_RELATION_MEMBER_TYPES_LOCK, FIELD_RELATION_MEMBER_TYPES);
     }
 
-    private LongArray relationOsmIdentifiers()
-    {
-        return deserializedIfNeeded(() -> this.relationOsmIdentifiers,
-                FIELD_RELATION_OSM_IDENTIFIERS_LOCK, FIELD_RELATION_OSM_IDENTIFIERS);
-    }
-
     private LongToLongMultiMap relationOsmIdentifierToRelationIdentifiers()
     {
         return deserializedIfNeeded(() -> this.relationOsmIdentifierToRelationIdentifiers,
                 FIELD_RELATION_OSM_IDENTIFIER_TO_RELATION_IDENTIFIERS_LOCK,
                 FIELD_RELATION_OSM_IDENTIFIER_TO_RELATION_IDENTIFIERS);
+    }
+
+    private LongArray relationOsmIdentifiers()
+    {
+        return deserializedIfNeeded(() -> this.relationOsmIdentifiers,
+                FIELD_RELATION_OSM_IDENTIFIERS_LOCK, FIELD_RELATION_OSM_IDENTIFIERS);
     }
 
     private PackedTagStore relationTags()

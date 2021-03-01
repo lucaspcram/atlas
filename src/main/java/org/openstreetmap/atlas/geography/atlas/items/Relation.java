@@ -268,7 +268,7 @@ public abstract class Relation extends AtlasEntity
         return GeoJsonType.FEATURE;
     }
 
-    public Geometry getGeometry()
+    public Geometry getJtsGeometry()
     {
         if (this.geom == null)
         {
@@ -457,9 +457,9 @@ public abstract class Relation extends AtlasEntity
     @Override
     public String toWkt()
     {
-        if (isMultiPolygon() && getGeometry() != null)
+        if (isMultiPolygon() && getJtsGeometry() != null)
         {
-            return getGeometry().toText();
+            return getJtsGeometry().toText();
         }
         return WktPrintable.toWktCollection(leafMembers().collect(Collectors.toList()));
     }

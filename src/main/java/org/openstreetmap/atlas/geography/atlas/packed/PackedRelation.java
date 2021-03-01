@@ -36,15 +36,15 @@ public class PackedRelation extends Relation
     }
 
     @Override
-    public Geometry getGeometry()
-    {
-        return packedAtlas().relationGeometry(this.index);
-    }
-
-    @Override
     public long getIdentifier()
     {
         return packedAtlas().relationIdentifier(this.index);
+    }
+
+    @Override
+    public Geometry getJtsGeometry()
+    {
+        return packedAtlas().relationGeometry(this.index);
     }
 
     @Override

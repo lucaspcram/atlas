@@ -12,6 +12,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import org.locationtech.jts.geom.Geometry;
 import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.Rectangle;
@@ -306,6 +307,9 @@ public class CompleteRelation extends Relation implements CompleteEntity<Complet
             builder.append("bounds: " + this.bounds.toWkt() + ", ");
             builder.append(separator);
         }
+        final Geometry geometry = this.getJtsGeometry();
+        builder.append("multiPolygonGeometry: " + (geometry != null ? geometry.toText() : null));
+        builder.append(separator);
         builder.append("]");
 
         return builder.toString();
@@ -356,6 +360,9 @@ public class CompleteRelation extends Relation implements CompleteEntity<Complet
             membersArray.add(memberObject);
         }
         relationObject.add("members", membersArray);
+        final Geometry geometry = this.getJtsGeometry();
+        relationObject.addProperty("multiPolygonGeometry",
+                geometry != null ? geometry.toText() : null);
 
         return relationObject;
     }
