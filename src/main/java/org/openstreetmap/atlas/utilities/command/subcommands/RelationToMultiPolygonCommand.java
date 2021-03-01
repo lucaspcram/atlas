@@ -155,7 +155,7 @@ public class RelationToMultiPolygonCommand extends AtlasLoaderCommand
 
         final File wktOutputFile = new File(concatenatedWktPath.toAbsolutePath().toString(),
                 this.getFileSystem());
-        wktOutputFile.writeAndClose(atlasMultiPolygon.toWkb());
+        wktOutputFile.writeAndClose(relationMultiPolygon.toText());
 
         if (!this.optionAndArgumentDelegate.hasOption(OUTPUT_WKT_OPTION_LONG))
         {

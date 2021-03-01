@@ -66,4 +66,14 @@ public class RelationMultipolygonGeometryTest
         });
 
     }
+
+    @Test
+    public void testSaveOldAtlas()
+    {
+        final File atlasFile = new File("/Users/lucascram/Desktop/2336472000000.atlas",
+                FileSystems.getDefault());
+        final File atlasFileCopy = new File("/Users/lucascram/Desktop/2336472000000_copy.atlas",
+                FileSystems.getDefault());
+        new AtlasResourceLoader().load(atlasFile).save(atlasFileCopy);
+    }
 }
