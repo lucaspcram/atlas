@@ -62,7 +62,7 @@ public class RelationMultipolygonGeometryTest
 
         new AtlasResourceLoader().load(atlasFile).relations().forEach(relation ->
         {
-            System.out.println(relation.getJtsGeometry().getCentroid());
+            relation.getJtsGeometry().ifPresent(jts -> System.err.println(jts.getCentroid()));
         });
 
     }

@@ -307,8 +307,8 @@ public class CompleteRelation extends Relation implements CompleteEntity<Complet
             builder.append("bounds: " + this.bounds.toWkt() + ", ");
             builder.append(separator);
         }
-        final Geometry geometry = this.getJtsGeometry();
-        builder.append("multiPolygonGeometry: " + (geometry != null ? geometry.toText() : null));
+        builder.append("multiPolygonGeometry: "
+                + this.getJtsGeometry().map(Geometry::toText).orElse("null"));
         builder.append(separator);
         builder.append("]");
 
@@ -360,9 +360,8 @@ public class CompleteRelation extends Relation implements CompleteEntity<Complet
             membersArray.add(memberObject);
         }
         relationObject.add("members", membersArray);
-        final Geometry geometry = this.getJtsGeometry();
         relationObject.addProperty("multiPolygonGeometry",
-                geometry != null ? geometry.toText() : null);
+                this.getJtsGeometry().map(Geometry::toText).orElse("null"));
 
         return relationObject;
     }

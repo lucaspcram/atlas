@@ -182,6 +182,7 @@ public final class PackedAtlasBuilder implements AtlasBuilder
         initialize();
         try
         {
+            // TODO we should not just add the TEST POLYGON here
             this.atlas.addRelation(identifier, osmIdentifier, structure.getMemberIdentifiers(),
                     structure.getMemberTypes(), structure.getMemberRoles(), tags,
                     new JtsMultiPolygonToMultiPolygonConverter()

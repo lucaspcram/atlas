@@ -84,6 +84,7 @@ public final class PackedAtlas extends AbstractAtlas
     protected static final String FIELD_SERIALIZER = "serializer";
     protected static final String FIELD_SAVE_SERIALIZATION_FORMAT = "saveSerializationFormat";
     protected static final String FIELD_LOAD_SERIALIZATION_FORMAT = "loadSerializationFormat";
+    protected static final String FIELD_CONTAINS_ENHANCED_RELATION_GEOMETRY = "containsEnhancedRelationGeometry";
     protected static final String FIELD_META_DATA = "metaData";
     protected static final String FIELD_DICTIONARY = "dictionary";
     protected static final Object FIELD_DICTIONARY_LOCK = new Object();
@@ -175,13 +176,12 @@ public final class PackedAtlas extends AbstractAtlas
     // Serialization formats for saving/loading this PackedAtlas
     private AtlasSerializationFormat saveSerializationFormat = AtlasSerializationFormat.PROTOBUF;
     private AtlasSerializationFormat loadSerializationFormat = AtlasSerializationFormat.PROTOBUF;
+    private boolean containsEnhancedRelationGeometry = true;
 
     // Meta-Data
     private AtlasMetaData metaData = new AtlasMetaData();
-
     // Dictionary
     private final IntegerDictionary<String> dictionary;
-
     // The OSM (and way-sectioned) edge and node indices
     private final LongArray edgeIdentifiers;
     private final LongArray nodeIdentifiers;
@@ -189,7 +189,6 @@ public final class PackedAtlas extends AbstractAtlas
     private final LongArray lineIdentifiers;
     private final LongArray pointIdentifiers;
     private final LongArray relationIdentifiers;
-
     // The maps from edge index to index in the arrays above, and in the attributes
     private final LongToLongMap edgeIdentifierToEdgeArrayIndex;
     private final LongToLongMap nodeIdentifierToNodeArrayIndex;
@@ -197,36 +196,30 @@ public final class PackedAtlas extends AbstractAtlas
     private final LongToLongMap lineIdentifierToLineArrayIndex;
     private final LongToLongMap pointIdentifierToPointArrayIndex;
     private final LongToLongMap relationIdentifierToRelationArrayIndex;
-
     // Node attributes
     private final LongArray nodeLocations;
     private final LongArrayOfArrays nodeInEdgesIndices;
     private final LongArrayOfArrays nodeOutEdgesIndices;
     private final PackedTagStore nodeTags;
     private final LongToLongMultiMap nodeIndexToRelationIndices;
-
     // Edge attributes
     private final LongArray edgeStartNodeIndex;
     private final LongArray edgeEndNodeIndex;
     private final PolyLineArray edgePolyLines;
     private final PackedTagStore edgeTags;
     private final LongToLongMultiMap edgeIndexToRelationIndices;
-
     // Areas attributes
     private final PolygonArray areaPolygons;
     private final PackedTagStore areaTags;
     private final LongToLongMultiMap areaIndexToRelationIndices;
-
     // Line attributes
     private final PolyLineArray linePolyLines;
     private final PackedTagStore lineTags;
     private final LongToLongMultiMap lineIndexToRelationIndices;
-
     // Point attributes
     private final LongArray pointLocations;
     private final PackedTagStore pointTags;
     private final LongToLongMultiMap pointIndexToRelationIndices;
-
     // Relation attributes
     private final LongArrayOfArrays relationMemberIndices;
     private final ByteArrayOfArrays relationMemberTypes;
@@ -236,7 +229,6 @@ public final class PackedAtlas extends AbstractAtlas
     private final LongToLongMultiMap relationOsmIdentifierToRelationIdentifiers;
     private final LongArray relationOsmIdentifiers;
     private final ByteArrayOfArrays relationGeometries;
-
     // Bounds of the Atlas
     private Rectangle bounds;
 
@@ -503,6 +495,11 @@ public final class PackedAtlas extends AbstractAtlas
             this.bounds = Rectangle.forLocated(boundedEntities);
         }
         return this.bounds;
+    }
+
+    public boolean containsEnhancedRelationGeometry()
+    {
+        return this.containsEnhancedRelationGeometry;
     }
 
     @Override
@@ -1369,6 +1366,16 @@ public final class PackedAtlas extends AbstractAtlas
     protected void setName(final String name) // NOSONAR
     {
         super.setName(name);
+    }
+
+    ByteArrayOfArrays enhancedRelationGeometries()
+    {
+        return relationGeometries();
+    }
+
+    void setContainsEnhancedRelationGeometry(final boolean flag)
+    {
+        this.containsEnhancedRelationGeometry = flag;
     }
 
     /**

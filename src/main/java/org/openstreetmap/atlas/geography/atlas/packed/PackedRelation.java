@@ -2,6 +2,7 @@ package org.openstreetmap.atlas.geography.atlas.packed;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.locationtech.jts.geom.Geometry;
@@ -42,9 +43,9 @@ public class PackedRelation extends Relation
     }
 
     @Override
-    public Geometry getJtsGeometry()
+    public Optional<Geometry> getJtsGeometry()
     {
-        return packedAtlas().relationGeometry(this.index);
+        return Optional.ofNullable(packedAtlas().relationGeometry(this.index));
     }
 
     @Override
