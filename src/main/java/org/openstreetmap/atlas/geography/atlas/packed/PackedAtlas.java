@@ -176,12 +176,14 @@ public final class PackedAtlas extends AbstractAtlas
     // Serialization formats for saving/loading this PackedAtlas
     private AtlasSerializationFormat saveSerializationFormat = AtlasSerializationFormat.PROTOBUF;
     private AtlasSerializationFormat loadSerializationFormat = AtlasSerializationFormat.PROTOBUF;
-    private boolean containsEnhancedRelationGeometry = true;
+    private boolean containsEnhancedRelationGeometry = false;
 
     // Meta-Data
     private AtlasMetaData metaData = new AtlasMetaData();
+
     // Dictionary
     private final IntegerDictionary<String> dictionary;
+
     // The OSM (and way-sectioned) edge and node indices
     private final LongArray edgeIdentifiers;
     private final LongArray nodeIdentifiers;
@@ -189,6 +191,7 @@ public final class PackedAtlas extends AbstractAtlas
     private final LongArray lineIdentifiers;
     private final LongArray pointIdentifiers;
     private final LongArray relationIdentifiers;
+
     // The maps from edge index to index in the arrays above, and in the attributes
     private final LongToLongMap edgeIdentifierToEdgeArrayIndex;
     private final LongToLongMap nodeIdentifierToNodeArrayIndex;
@@ -196,30 +199,36 @@ public final class PackedAtlas extends AbstractAtlas
     private final LongToLongMap lineIdentifierToLineArrayIndex;
     private final LongToLongMap pointIdentifierToPointArrayIndex;
     private final LongToLongMap relationIdentifierToRelationArrayIndex;
+
     // Node attributes
     private final LongArray nodeLocations;
     private final LongArrayOfArrays nodeInEdgesIndices;
     private final LongArrayOfArrays nodeOutEdgesIndices;
     private final PackedTagStore nodeTags;
     private final LongToLongMultiMap nodeIndexToRelationIndices;
+
     // Edge attributes
     private final LongArray edgeStartNodeIndex;
     private final LongArray edgeEndNodeIndex;
     private final PolyLineArray edgePolyLines;
     private final PackedTagStore edgeTags;
     private final LongToLongMultiMap edgeIndexToRelationIndices;
+
     // Areas attributes
     private final PolygonArray areaPolygons;
     private final PackedTagStore areaTags;
     private final LongToLongMultiMap areaIndexToRelationIndices;
+
     // Line attributes
     private final PolyLineArray linePolyLines;
     private final PackedTagStore lineTags;
     private final LongToLongMultiMap lineIndexToRelationIndices;
+
     // Point attributes
     private final LongArray pointLocations;
     private final PackedTagStore pointTags;
     private final LongToLongMultiMap pointIndexToRelationIndices;
+
     // Relation attributes
     private final LongArrayOfArrays relationMemberIndices;
     private final ByteArrayOfArrays relationMemberTypes;
@@ -228,7 +237,8 @@ public final class PackedAtlas extends AbstractAtlas
     private final LongToLongMultiMap relationIndexToRelationIndices;
     private final LongToLongMultiMap relationOsmIdentifierToRelationIdentifiers;
     private final LongArray relationOsmIdentifiers;
-    private final ByteArrayOfArrays relationGeometries;
+    private ByteArrayOfArrays relationGeometries;
+
     // Bounds of the Atlas
     private Rectangle bounds;
 
@@ -313,6 +323,11 @@ public final class PackedAtlas extends AbstractAtlas
      *            The size estimates
      */
     protected PackedAtlas(final AtlasSize estimates)
+    {
+        this(estimates, false);
+    }
+
+    protected PackedAtlas(final AtlasSize estimates, final boolean containsEnhancedRelationGeometry)
     {
         final long edgeNumberEstimate = estimates.getEdgeNumber();
         final long nodeNumberEstimate = estimates.getNodeNumber();
@@ -438,8 +453,6 @@ public final class PackedAtlas extends AbstractAtlas
                 subArraySize);
         this.relationOsmIdentifiers = new LongArray(maximumSize, relationMemoryBlockSize,
                 subArraySize);
-        this.relationGeometries = new ByteArrayOfArrays(maximumSize, relationMemoryBlockSize,
-                subArraySize);
 
         this.edgeIdentifiers.setName("PackedAtlas - edgeIdentifiers");
         this.edgeStartNodeIndex.setName("PackedAtlas - edgeStartNodeIndex");
@@ -465,7 +478,14 @@ public final class PackedAtlas extends AbstractAtlas
         this.relationMemberTypes.setName("PackedAtlas - relationMemberTypes");
         this.relationMemberRoles.setName("PackedAtlas - relationMemberRoles");
         this.relationOsmIdentifiers.setName("PackedAtlas - relationOsmIdentifiers");
-        this.relationGeometries.setName("PackedAtlas - relationGeometries");
+
+        if (containsEnhancedRelationGeometry)
+        {
+            this.containsEnhancedRelationGeometry = containsEnhancedRelationGeometry;
+            this.relationGeometries = new ByteArrayOfArrays(maximumSize, relationMemoryBlockSize,
+                    subArraySize);
+            this.relationGeometries.setName("PackedAtlas - relationGeometries");
+        }
     }
 
     @Override
@@ -670,6 +690,10 @@ public final class PackedAtlas extends AbstractAtlas
     public void setSaveSerializationFormat(final AtlasSerializationFormat format)
     {
         this.saveSerializationFormat = format;
+        if (this.saveSerializationFormat != AtlasSerializationFormat.PROTOBUF)
+        {
+            this.containsEnhancedRelationGeometry = false;
+        }
     }
 
     /**
@@ -977,13 +1001,22 @@ public final class PackedAtlas extends AbstractAtlas
                 }
             }
 
-            final ByteArrayResource compressedGeom = new ByteArrayResource();
-            compressedGeom.setCompressor(Compressor.GZIP);
-            compressedGeom.writeAndClose(geometry.toText());
+            if (geometry != null)
+            {
+                if (!this.containsEnhancedRelationGeometry)
+                {
+                    throw new AtlasIntegrityException(
+                            "Could not add Relation {} with enhanced geometry because it was not enabled for this atlas",
+                            relationIdentifier);
+                }
+                final ByteArrayResource compressedGeom = new ByteArrayResource();
+                compressedGeom.setCompressor(Compressor.GZIP);
+                compressedGeom.writeAndClose(geometry.toText());
+                this.relationGeometries.add(compressedGeom.readBytesAndClose());
+            }
             this.relationMemberTypes.add(typeValues);
             this.relationMemberIndices.add(memberIndices);
             this.relationMemberRoles.add(roleValues);
-            this.relationGeometries.add(compressedGeom.readBytesAndClose());
 
             // Tags
             updatePackedTagStore(this.relationTags, index, tags);

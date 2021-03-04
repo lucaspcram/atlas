@@ -5,7 +5,6 @@ import java.util.Map;
 import org.locationtech.jts.geom.Geometry;
 import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.geography.Location;
-import org.openstreetmap.atlas.geography.MultiPolygon;
 import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.Polygon;
 import org.openstreetmap.atlas.geography.atlas.Atlas;
@@ -17,7 +16,6 @@ import org.openstreetmap.atlas.geography.atlas.exception.AtlasIntegrityException
 import org.openstreetmap.atlas.geography.atlas.items.AtlasItem;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.items.RelationMember;
-import org.openstreetmap.atlas.geography.converters.jts.JtsMultiPolygonToMultiPolygonConverter;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
 import org.slf4j.Logger;
@@ -182,11 +180,8 @@ public final class PackedAtlasBuilder implements AtlasBuilder
         initialize();
         try
         {
-            // TODO we should not just add the TEST POLYGON here
             this.atlas.addRelation(identifier, osmIdentifier, structure.getMemberIdentifiers(),
-                    structure.getMemberTypes(), structure.getMemberRoles(), tags,
-                    new JtsMultiPolygonToMultiPolygonConverter()
-                            .backwardConvert(MultiPolygon.TEST_MULTI_POLYGON));
+                    structure.getMemberTypes(), structure.getMemberRoles(), tags, null);
         }
         catch (final AtlasIntegrityException e)
         {
@@ -194,7 +189,7 @@ public final class PackedAtlasBuilder implements AtlasBuilder
         }
         catch (final Exception e)
         {
-            logger.error("Error adding Relation ({}): {}", identifier, structure.toString(), e);
+            logger.error("Error adding Relation ({}): {}", identifier, structure, e);
         }
     }
 
@@ -278,6 +273,12 @@ public final class PackedAtlasBuilder implements AtlasBuilder
         this.sizeEstimates = estimates;
     }
 
+    public PackedAtlasBuilder withEnhancedRelationGeometry()
+    {
+        initialize(true);
+        return this;
+    }
+
     public PackedAtlasBuilder withMetaData(final AtlasMetaData metaData)
     {
         setMetaData(metaData);
@@ -298,13 +299,18 @@ public final class PackedAtlasBuilder implements AtlasBuilder
 
     private void initialize()
     {
+        initialize(false);
+    }
+
+    private void initialize(final boolean withEnhancedRelationGeometry)
+    {
         if (this.locked)
         {
             throw new CoreException("Cannot keep adding items to a locked graph.");
         }
         if (this.atlas == null)
         {
-            this.atlas = new PackedAtlas(this.sizeEstimates);
+            this.atlas = new PackedAtlas(this.sizeEstimates, withEnhancedRelationGeometry);
             this.atlas.setName(this.name);
         }
     }

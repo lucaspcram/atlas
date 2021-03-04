@@ -24,6 +24,7 @@ import org.openstreetmap.atlas.streaming.resource.zip.ZipFileWritableResource;
 import org.openstreetmap.atlas.streaming.resource.zip.ZipResource;
 import org.openstreetmap.atlas.streaming.resource.zip.ZipResource.ZipIterator;
 import org.openstreetmap.atlas.streaming.resource.zip.ZipWritableResource;
+import org.openstreetmap.atlas.utilities.arrays.ByteArrayOfArrays;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.collections.MultiIterable;
 import org.openstreetmap.atlas.utilities.collections.StreamIterable;
@@ -133,7 +134,12 @@ public final class PackedAtlasSerializer
             {
                 try
                 {
-                    atlas.enhancedRelationGeometries();
+                    atlas.setContainsEnhancedRelationGeometry(true);
+                    final ByteArrayOfArrays array = atlas.enhancedRelationGeometries();
+                    if (array == null)
+                    {
+                        atlas.setContainsEnhancedRelationGeometry(false);
+                    }
                 }
                 catch (final CoreException exception)
                 {
@@ -142,11 +148,11 @@ public final class PackedAtlasSerializer
                     {
                         atlas.setContainsEnhancedRelationGeometry(false);
                     }
+                    else
+                    {
+                        throw exception;
+                    }
                 }
-            }
-            else
-            {
-                atlas.setContainsEnhancedRelationGeometry(false);
             }
 
             return;

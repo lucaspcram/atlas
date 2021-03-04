@@ -45,7 +45,11 @@ public class PackedRelation extends Relation
     @Override
     public Optional<Geometry> getJtsGeometry()
     {
-        return Optional.ofNullable(packedAtlas().relationGeometry(this.index));
+        if (packedAtlas().containsEnhancedRelationGeometry())
+        {
+            return Optional.ofNullable(packedAtlas().relationGeometry(this.index));
+        }
+        return super.getJtsGeometry();
     }
 
     @Override
