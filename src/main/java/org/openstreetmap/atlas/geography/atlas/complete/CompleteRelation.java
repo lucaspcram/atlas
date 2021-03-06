@@ -48,6 +48,7 @@ public class CompleteRelation extends Relation implements CompleteEntity<Complet
     private RelationBean allKnownOsmMembers;
     private Long osmRelationIdentifier;
     private Set<Long> relationIdentifiers;
+    private Geometry jtsGeometry;
 
     private final TagChangeDelegate tagChangeDelegate = TagChangeDelegate.newTagChangeDelegate();
 
@@ -73,7 +74,8 @@ public class CompleteRelation extends Relation implements CompleteEntity<Complet
                         .collect(Collectors.toList()),
                 relation.allKnownOsmMembers().asBean(), relation.osmRelationIdentifier(),
                 relation.relations().stream().map(Relation::getIdentifier)
-                        .collect(Collectors.toSet()));
+                        .collect(Collectors.toSet()),
+                relation.getJtsGeometry().orElse(null));
     }
 
     /**
@@ -105,7 +107,7 @@ public class CompleteRelation extends Relation implements CompleteEntity<Complet
             final Rectangle bounds, final RelationBean members,
             final List<Long> allRelationsWithSameOsmIdentifier,
             final RelationBean allKnownOsmMembers, final Long osmRelationIdentifier,
-            final Set<Long> relationIdentifiers)
+            final Set<Long> relationIdentifiers, final Geometry jtsGeometry)
     {
         super(new EmptyAtlas());
 
@@ -123,6 +125,17 @@ public class CompleteRelation extends Relation implements CompleteEntity<Complet
         this.allKnownOsmMembers = allKnownOsmMembers;
         this.osmRelationIdentifier = osmRelationIdentifier;
         this.relationIdentifiers = relationIdentifiers;
+        this.jtsGeometry = jtsGeometry;
+    }
+
+    public CompleteRelation(final Long identifier, final Map<String, String> tags, // NOSONAR
+            final Rectangle bounds, final RelationBean members,
+            final List<Long> allRelationsWithSameOsmIdentifier,
+            final RelationBean allKnownOsmMembers, final Long osmRelationIdentifier,
+            final Set<Long> relationIdentifiers)
+    {
+        this(identifier, tags, bounds, members, allRelationsWithSameOsmIdentifier,
+                allKnownOsmMembers, osmRelationIdentifier, relationIdentifiers, null);
     }
 
     protected CompleteRelation(final Atlas atlas)
@@ -225,6 +238,12 @@ public class CompleteRelation extends Relation implements CompleteEntity<Complet
     public long getIdentifier()
     {
         return this.identifier;
+    }
+
+    @Override
+    public Optional<Geometry> getJtsGeometry()
+    {
+        return Optional.ofNullable(this.jtsGeometry);
     }
 
     @Override
@@ -468,6 +487,12 @@ public class CompleteRelation extends Relation implements CompleteEntity<Complet
     public CompleteRelation withIdentifier(final long identifier)
     {
         this.identifier = identifier;
+        return this;
+    }
+
+    public CompleteRelation withJtsGeometry(final Geometry geometry)
+    {
+        this.jtsGeometry = geometry;
         return this;
     }
 

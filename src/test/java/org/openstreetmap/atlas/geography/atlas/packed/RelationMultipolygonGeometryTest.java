@@ -11,6 +11,7 @@ import org.openstreetmap.atlas.geography.Polygon;
 import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.geography.atlas.AtlasResourceLoader;
 import org.openstreetmap.atlas.geography.atlas.builder.RelationBean;
+import org.openstreetmap.atlas.geography.atlas.complete.CompleteRelation;
 import org.openstreetmap.atlas.geography.atlas.items.ItemType;
 import org.openstreetmap.atlas.geography.converters.jts.JtsMultiPolygonToMultiPolygonConverter;
 import org.openstreetmap.atlas.streaming.resource.File;
@@ -32,20 +33,41 @@ public class RelationMultipolygonGeometryTest
         {
             setupFilesystem(filesystem);
 
-            // final PackedAtlas atlas = (PackedAtlas) new AtlasResourceLoader()
-            // .load(new File("/Users/foo/test.atlas", filesystem));
-            // Assert.assertTrue(atlas.containsEnhancedRelationGeometry());
-            // Assert.assertNotNull(atlas.enhancedRelationGeometries());
+            final PackedAtlas atlas = (PackedAtlas) new AtlasResourceLoader()
+                    .load(new File("/Users/foo/test.atlas", filesystem));
+            Assert.assertTrue(atlas.containsEnhancedRelationGeometry());
+            Assert.assertNotNull(atlas.enhancedRelationGeometries());
 
             final PackedAtlas atlasNoEnhancedGeometry = (PackedAtlas) new AtlasResourceLoader()
                     .load(new File("/Users/foo/test_notEnhanced.atlas", filesystem));
             Assert.assertFalse(atlasNoEnhancedGeometry.containsEnhancedRelationGeometry());
             Assert.assertNull(atlasNoEnhancedGeometry.enhancedRelationGeometries());
 
-            // final PackedAtlas atlasJava = (PackedAtlas) new AtlasResourceLoader()
-            // .load(new File("/Users/foo/test_java.atlas", filesystem));
-            // Assert.assertFalse(atlasJava.containsEnhancedRelationGeometry());
-            // Assert.assertNull(atlasJava.enhancedRelationGeometries());
+            final PackedAtlas atlasJava = (PackedAtlas) new AtlasResourceLoader()
+                    .load(new File("/Users/foo/test_java.atlas", filesystem));
+            Assert.assertFalse(atlasJava.containsEnhancedRelationGeometry());
+            Assert.assertNull(atlasJava.enhancedRelationGeometries());
+        }
+        catch (final IOException exception)
+        {
+            throw new CoreException("FileSystem operation failed", exception);
+        }
+    }
+
+    @Test
+    public void testReadingGeometry()
+    {
+        try (FileSystem filesystem = Jimfs.newFileSystem(Configuration.osX()))
+        {
+            setupFilesystem(filesystem);
+
+            final PackedAtlas atlas = (PackedAtlas) new AtlasResourceLoader()
+                    .load(new File("/Users/foo/test.atlas", filesystem));
+            CompleteRelation.from(atlas.relation(1L)).getJtsGeometry();
+
+            final PackedAtlas atlasNoEnhancedGeometry = (PackedAtlas) new AtlasResourceLoader()
+                    .load(new File("/Users/foo/test_notEnhanced.atlas", filesystem));
+            CompleteRelation.from(atlasNoEnhancedGeometry.relation(1L)).getJtsGeometry();
         }
         catch (final IOException exception)
         {
