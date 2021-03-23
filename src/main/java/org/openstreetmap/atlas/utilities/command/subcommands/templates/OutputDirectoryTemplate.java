@@ -30,7 +30,7 @@ public class OutputDirectoryTemplate implements AtlasShellToolsCommandTemplate
 
     /**
      * Get the output path specified by the user. If the returned {@link Optional} is empty, then
-     * the output path could not be parsed and it is recommended that you exit with an error.
+     * the output path could not be constructed and it is recommended that you exit with an error.
      * 
      * @param parentCommand
      *            the parent command that controls this template
