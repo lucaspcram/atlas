@@ -144,6 +144,20 @@ public class AtlasLoaderTemplate implements AtlasShellToolsCommandTemplate
     }
 
     /**
+     * Removes all suffixes from a given filename. So if the input fileName is "hello.txt", this
+     * will return "hello". If the input filename is "goodbye.txt.gz", this will return "goodbye".
+     *
+     * @param fileName
+     *            the file name to modify
+     * @return the fileName with all suffixes removed
+     */
+    public static String removeSuffixFromFileName(final String fileName)
+    {
+        final String[] split = fileName.split("\\.");
+        return split[0];
+    }
+
+    /**
      * Get a list of input atlas resources with their associated atlases, one for each atlas loaded
      * from the input-atlases parameter.
      *

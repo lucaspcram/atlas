@@ -2,6 +2,7 @@ package org.openstreetmap.atlas.utilities.command.subcommands;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
 
 import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.streaming.resource.File;
@@ -11,12 +12,13 @@ import org.openstreetmap.atlas.utilities.command.abstractcommand.AbstractAtlasSh
 import org.openstreetmap.atlas.utilities.command.abstractcommand.CommandOutputDelegate;
 import org.openstreetmap.atlas.utilities.command.abstractcommand.OptionAndArgumentDelegate;
 import org.openstreetmap.atlas.utilities.command.parsing.OptionOptionality;
-import org.openstreetmap.atlas.utilities.command.subcommands.templates.AtlasLoaderCommand;
+import org.openstreetmap.atlas.utilities.command.subcommands.templates.AtlasLoaderTemplate;
+import org.openstreetmap.atlas.utilities.command.subcommands.templates.OutputDirectoryTemplate;
 
 /**
  * @author lcram
  */
-public class PackedToTextAtlasCommand extends AtlasLoaderCommand
+public class PackedToTextAtlasCommand extends AbstractAtlasShellToolsCommand
 {
     private static final String SAVED_TO = "saved to ";
 
@@ -45,9 +47,14 @@ public class PackedToTextAtlasCommand extends AtlasLoaderCommand
 
     public PackedToTextAtlasCommand()
     {
-        super();
         this.optionAndArgumentDelegate = this.getOptionAndArgumentDelegate();
         this.outputDelegate = this.getCommandOutputDelegate();
+    }
+
+    @Override
+    public int execute()
+    {
+        return AtlasLoaderTemplate.execute(this, null, this::processAtlas, null);
     }
 
     @Override
@@ -69,7 +76,8 @@ public class PackedToTextAtlasCommand extends AtlasLoaderCommand
                 .getResourceAsStream("PackedToTextAtlasCommandDescriptionSection.txt"));
         addManualPageSection("EXAMPLES", PackedToTextAtlasCommand.class
                 .getResourceAsStream("PackedToTextAtlasCommandExamplesSection.txt"));
-        super.registerManualPageSections();
+        registerManualPageSectionsFromTemplate(new AtlasLoaderTemplate());
+        registerManualPageSectionsFromTemplate(new OutputDirectoryTemplate());
     }
 
     @Override
@@ -81,11 +89,16 @@ public class PackedToTextAtlasCommand extends AtlasLoaderCommand
                 OptionOptionality.REQUIRED, GEOJSON_CONTEXT);
         registerOption(LDGEOJSON_OPTION_LONG, LDGEOJSON_OPTION_SHORT, LDGEOJSON_OPTION_DESCRIPTION,
                 OptionOptionality.REQUIRED, LDGEOJSON_CONTEXT);
+        registerOptionsAndArgumentsFromTemplate(
+                new AtlasLoaderTemplate(AbstractAtlasShellToolsCommand.DEFAULT_CONTEXT,
+                        GEOJSON_CONTEXT, LDGEOJSON_CONTEXT));
+        registerOptionsAndArgumentsFromTemplate(
+                new OutputDirectoryTemplate(AbstractAtlasShellToolsCommand.DEFAULT_CONTEXT,
+                        GEOJSON_CONTEXT, LDGEOJSON_CONTEXT));
         super.registerOptionsAndArguments();
     }
 
-    @Override
-    protected void processAtlas(final Atlas atlas, final String atlasFileName,
+    private void processAtlas(final Atlas atlas, final String atlasFileName,
             final File atlasResource)
     {
         if (this.optionAndArgumentDelegate.hasVerboseOption())
@@ -106,11 +119,19 @@ public class PackedToTextAtlasCommand extends AtlasLoaderCommand
 
     private void writeOutput(final String atlasFileName, final Atlas outputAtlas)
     {
-        final String fileName = AtlasLoaderCommand.removeSuffixFromFileName(atlasFileName);
-        final Path concatenatedPath = Paths.get(getOutputPath().toAbsolutePath().toString(),
-                fileName);
-        File outputFile = null;
+        final String fileName = AtlasLoaderTemplate.removeSuffixFromFileName(atlasFileName);
+        final Optional<Path> outputPathOptional = OutputDirectoryTemplate.getOutputPath(this);
+        if (outputPathOptional.isEmpty())
+        {
+            this.outputDelegate
+                    .printlnWarnMessage("could not save " + atlasFileName + ", skipping...");
+            return;
+        }
+        final Path concatenatedPath = outputPathOptional
+                .map(path -> Paths.get(path.toAbsolutePath().toString(), fileName))
+                .orElseThrow(AtlasShellToolsException::new);
 
+        final File outputFile;
         if (this.optionAndArgumentDelegate
                 .getParserContext() == AbstractAtlasShellToolsCommand.DEFAULT_CONTEXT)
         {

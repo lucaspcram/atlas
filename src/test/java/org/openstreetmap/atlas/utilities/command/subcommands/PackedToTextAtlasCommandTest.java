@@ -25,6 +25,36 @@ import com.google.common.jimfs.Jimfs;
 public class PackedToTextAtlasCommandTest
 {
     @Test
+    public void testFail1()
+    {
+        try (FileSystem filesystem = Jimfs.newFileSystem(Configuration.osX()))
+        {
+            setupFilesystem1(filesystem);
+            final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+            final ByteArrayOutputStream errContent = new ByteArrayOutputStream();
+            final PackedToTextAtlasCommand command = new PackedToTextAtlasCommand();
+            command.setNewFileSystem(filesystem);
+            command.setNewOutStream(new PrintStream(outContent));
+            command.setNewErrStream(new PrintStream(errContent));
+
+            command.runSubcommand("/Users/foo/text.atlas.txt", "--verbose",
+                    "--output-directory=/Users/foo/binary.atlas");
+
+            Assert.assertEquals("", outContent.toString());
+            Assert.assertEquals("packed2text: loading /Users/foo/text.atlas.txt\n"
+                    + "packed2text: processing atlas /Users/foo/text.atlas.txt (1/1)\n"
+                    + "packed2text: converting /Users/foo/text.atlas.txt...\n"
+                    + "packed2text: error: output path /Users/foo/binary.atlas already exists and is a file\n"
+                    + "packed2text: warn: could not save text.atlas.txt, skipping...\n",
+                    errContent.toString());
+        }
+        catch (final IOException exception)
+        {
+            throw new CoreException("FileSystem operation failed", exception);
+        }
+    }
+
+    @Test
     public void testReverse()
     {
         try (FileSystem filesystem = Jimfs.newFileSystem(Configuration.osX()))
@@ -37,8 +67,8 @@ public class PackedToTextAtlasCommandTest
             command.setNewOutStream(new PrintStream(outContent));
             command.setNewErrStream(new PrintStream(errContent));
 
-            command.runSubcommand("/Users/foo/text.atlas.txt", "--verbose", "--output=/Users/foo",
-                    "--reverse");
+            command.runSubcommand("/Users/foo/text.atlas.txt", "--verbose",
+                    "--output-directory=/Users/foo", "--reverse");
 
             Assert.assertTrue(outContent.toString().isEmpty());
             Assert.assertEquals(
@@ -72,8 +102,8 @@ public class PackedToTextAtlasCommandTest
             command.setNewOutStream(new PrintStream(outContent));
             command.setNewErrStream(new PrintStream(errContent));
 
-            command.runSubcommand("/Users/foo/text.atlas.txt", "--verbose", "--output=/Users/foo",
-                    "--geojson");
+            command.runSubcommand("/Users/foo/text.atlas.txt", "--verbose",
+                    "--output-directory=/Users/foo", "--geojson");
 
             Assert.assertTrue(outContent.toString().isEmpty());
             Assert.assertEquals(
@@ -109,8 +139,8 @@ public class PackedToTextAtlasCommandTest
             command.setNewOutStream(new PrintStream(outContent));
             command.setNewErrStream(new PrintStream(errContent));
 
-            command.runSubcommand("/Users/foo/binary.atlas", "--verbose", "--output=/Users/foo",
-                    "--ldgeojson");
+            command.runSubcommand("/Users/foo/binary.atlas", "--verbose",
+                    "--output-directory=/Users/foo", "--ldgeojson");
 
             Assert.assertTrue(outContent.toString().isEmpty());
             Assert.assertEquals(
@@ -144,7 +174,8 @@ public class PackedToTextAtlasCommandTest
             command.setNewOutStream(new PrintStream(outContent));
             command.setNewErrStream(new PrintStream(errContent));
 
-            command.runSubcommand("/Users/foo/binary.atlas", "--verbose", "--output=/Users/foo");
+            command.runSubcommand("/Users/foo/binary.atlas", "--verbose",
+                    "--output-directory=/Users/foo");
 
             Assert.assertTrue(outContent.toString().isEmpty());
             Assert.assertEquals(

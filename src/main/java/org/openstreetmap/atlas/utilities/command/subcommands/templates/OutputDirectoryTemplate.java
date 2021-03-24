@@ -50,7 +50,7 @@ public class OutputDirectoryTemplate implements AtlasShellToolsCommandTemplate
         if (Files.isRegularFile(outputParentPath))
         {
             parentCommand.getCommandOutputDelegate().printlnErrorMessage(
-                    outputParentPath.toString() + " already exists and is a file");
+                    "output path " + outputParentPath.toString() + " already exists and is a file");
             return Optional.empty();
         }
 
@@ -74,8 +74,8 @@ public class OutputDirectoryTemplate implements AtlasShellToolsCommandTemplate
         // If output path is not writable, fail
         if (!Files.isWritable(outputParentPath))
         {
-            parentCommand.getCommandOutputDelegate()
-                    .printlnErrorMessage(outputParentPath.toString() + " is not writable");
+            parentCommand.getCommandOutputDelegate().printlnErrorMessage(
+                    "output path " + outputParentPath.toString() + " is not writable");
             return Optional.empty();
         }
 
