@@ -1,6 +1,7 @@
 package org.openstreetmap.atlas.utilities.command.subcommands;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.openstreetmap.atlas.geography.Polygon;
 import org.openstreetmap.atlas.geography.boundary.CountryBoundaryMap;
@@ -11,7 +12,6 @@ import org.openstreetmap.atlas.geography.sharding.Shard;
 import org.openstreetmap.atlas.geography.sharding.Sharding;
 import org.openstreetmap.atlas.geography.sharding.SlippyTileSharding;
 import org.openstreetmap.atlas.geography.sharding.converters.StringToShardConverter;
-import org.openstreetmap.atlas.streaming.resource.File;
 import org.openstreetmap.atlas.utilities.command.AtlasShellToolsException;
 import org.openstreetmap.atlas.utilities.command.abstractcommand.AbstractAtlasShellToolsCommand;
 import org.openstreetmap.atlas.utilities.command.abstractcommand.CommandOutputDelegate;
@@ -19,6 +19,7 @@ import org.openstreetmap.atlas.utilities.command.abstractcommand.OptionAndArgume
 import org.openstreetmap.atlas.utilities.command.parsing.ArgumentArity;
 import org.openstreetmap.atlas.utilities.command.parsing.ArgumentOptionality;
 import org.openstreetmap.atlas.utilities.command.parsing.OptionOptionality;
+import org.openstreetmap.atlas.utilities.command.subcommands.templates.CountryBoundaryMapTemplate;
 import org.openstreetmap.atlas.utilities.command.terminal.TTYAttribute;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,10 +35,6 @@ public class CountryShardToBoundsCommand extends AbstractAtlasShellToolsCommand
     private static final String REVERSE_OPTION_DESCRIPTION = "Convert given WKT bound(s) to SlippyTile/GeoHashTile shard(s) if possible. Supports up to slippy zoom level "
             + Sharding.SLIPPY_ZOOM_MAXIMUM + " and geohash precision "
             + GeoHashTile.MAXIMUM_PRECISION + ".";
-
-    private static final String COUNTRY_BOUNDARY_OPTION_LONG = "country-boundary";
-    private static final String COUNTRY_BOUNDARY_OPTION_DESCRIPTION = "A boundary file to use as a source. See DESCRIPTION section for details.";
-    private static final String COUNTRY_BOUNDARY_OPTION_HINT = "boundary-file";
 
     private static final String SHARD = "shard";
     private static final String COUNTRY = "ISO3-country-code";
@@ -95,15 +92,14 @@ public class CountryShardToBoundsCommand extends AbstractAtlasShellToolsCommand
                 .getResourceAsStream("CountryShardToBoundsCommandDescriptionSection.txt"));
         addManualPageSection("EXAMPLES", CountryShardToBoundsCommand.class
                 .getResourceAsStream("CountryShardToBoundsCommandExamplesSection.txt"));
+        registerManualPageSectionsFromTemplate(new CountryBoundaryMapTemplate());
     }
 
     @Override
     public void registerOptionsAndArguments()
     {
         registerOption(REVERSE_OPTION_LONG, REVERSE_OPTION_DESCRIPTION, OptionOptionality.OPTIONAL);
-        registerOptionWithRequiredArgument(COUNTRY_BOUNDARY_OPTION_LONG,
-                COUNTRY_BOUNDARY_OPTION_DESCRIPTION, OptionOptionality.REQUIRED,
-                COUNTRY_BOUNDARY_OPTION_HINT, COUNTRY_CONTEXT);
+        registerOptionsAndArgumentsFromTemplate(new CountryBoundaryMapTemplate(COUNTRY_CONTEXT));
         registerArgument(SHARD, ArgumentArity.VARIADIC, ArgumentOptionality.REQUIRED,
                 SHARD_CONTEXT);
         registerArgument(COUNTRY, ArgumentArity.VARIADIC, ArgumentOptionality.REQUIRED,
@@ -113,26 +109,15 @@ public class CountryShardToBoundsCommand extends AbstractAtlasShellToolsCommand
 
     private int executeCountryContext()
     {
-        final CountryBoundaryMap countryBoundaryMap;
-        final File boundaryMapFile = new File(
-                this.optionAndArgumentDelegate.getOptionArgument(COUNTRY_BOUNDARY_OPTION_LONG)
-                        .orElseThrow(AtlasShellToolsException::new),
-                this.getFileSystem());
-        if (!boundaryMapFile.exists())
+        CountryBoundaryMap countryBoundaryMap = null;
+        final Optional<CountryBoundaryMap> mapOptional = CountryBoundaryMapTemplate
+                .getCountryBoundaryMap(this);
+        if (mapOptional.isEmpty())
         {
-            this.outputDelegate.printlnErrorMessage(
-                    "boundary file " + boundaryMapFile.getAbsolutePathString() + " does not exist");
+            this.outputDelegate.printlnErrorMessage("failed to load country boundary");
             return 1;
         }
-        if (this.optionAndArgumentDelegate.hasVerboseOption())
-        {
-            this.outputDelegate.printlnCommandMessage("loading country boundary map...");
-        }
-        countryBoundaryMap = CountryBoundaryMap.fromPlainText(boundaryMapFile);
-        if (this.optionAndArgumentDelegate.hasVerboseOption())
-        {
-            this.outputDelegate.printlnCommandMessage("loaded boundary map");
-        }
+        countryBoundaryMap = mapOptional.get();
 
         final List<String> countryCodes = this.optionAndArgumentDelegate
                 .getVariadicArgument(COUNTRY);
