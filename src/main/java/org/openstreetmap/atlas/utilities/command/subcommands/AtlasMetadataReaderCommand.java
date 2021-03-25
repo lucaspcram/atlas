@@ -7,16 +7,17 @@ import java.util.stream.Collectors;
 import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.streaming.resource.File;
 import org.openstreetmap.atlas.utilities.collections.StringList;
+import org.openstreetmap.atlas.utilities.command.abstractcommand.AbstractAtlasShellToolsCommand;
 import org.openstreetmap.atlas.utilities.command.abstractcommand.CommandOutputDelegate;
 import org.openstreetmap.atlas.utilities.command.abstractcommand.OptionAndArgumentDelegate;
 import org.openstreetmap.atlas.utilities.command.parsing.OptionOptionality;
-import org.openstreetmap.atlas.utilities.command.subcommands.templates.AtlasLoaderCommand;
+import org.openstreetmap.atlas.utilities.command.subcommands.templates.AtlasLoaderTemplate;
 import org.openstreetmap.atlas.utilities.command.terminal.TTYAttribute;
 
 /**
  * @author lcram
  */
-public class AtlasMetadataReaderCommand extends AtlasLoaderCommand
+public class AtlasMetadataReaderCommand extends AbstractAtlasShellToolsCommand
 {
     private static final String SIZE_OPTION_LONG = "size";
     private static final String SIZE_OPTION_DESCRIPTION = "Show feature array sizes.";
@@ -54,6 +55,12 @@ public class AtlasMetadataReaderCommand extends AtlasLoaderCommand
     }
 
     @Override
+    public int execute()
+    {
+        return AtlasLoaderTemplate.execute(this, null, this::processAtlas, null);
+    }
+
+    @Override
     public String getCommandName()
     {
         return "atlas-metadata-reader";
@@ -72,7 +79,7 @@ public class AtlasMetadataReaderCommand extends AtlasLoaderCommand
                 .getResourceAsStream("AtlasMetadataReaderCommandDescriptionSection.txt"));
         addManualPageSection("EXAMPLES", AtlasMetadataReaderCommand.class
                 .getResourceAsStream("AtlasMetadataReaderCommandExamplesSection.txt"));
-        super.registerManualPageSections();
+        registerManualPageSectionsFromTemplate(new AtlasLoaderTemplate());
     }
 
     @Override
@@ -88,11 +95,11 @@ public class AtlasMetadataReaderCommand extends AtlasLoaderCommand
         registerOption(COUNTRY_OPTION_LONG, COUNTRY_OPTION_DESCRIPTION, OptionOptionality.OPTIONAL);
         registerOption(SHARD_OPTION_LONG, SHARD_OPTION_DESCRIPTION, OptionOptionality.OPTIONAL);
         registerOption(TAGS_OPTION_LONG, TAGS_OPTION_DESCRIPTION, OptionOptionality.OPTIONAL);
+        registerOptionsAndArgumentsFromTemplate(new AtlasLoaderTemplate());
         super.registerOptionsAndArguments();
     }
 
-    @Override
-    protected void processAtlas(final Atlas atlas, final String atlasFileName,
+    private void processAtlas(final Atlas atlas, final String atlasFileName,
             final File atlasResource)
     {
         this.outputDelegate.printlnStdout(atlasResource.getPathString() + " metadata:",
